@@ -14,12 +14,18 @@ module GitMedia
     # find tree entries that are likely media references
     def self.find_references
       references = {:to_expand => [], :expanded => [], :deleted => []}
-      files = `git ls-tree -lz -r HEAD | tr "\\000" \\\\n`.split("\n")
+      files = `git ls-tree -lz -r HEAD | tr "\\000" \\n`.lines
       files = files.map { |f| s = f.split("\t"); [s[0].split(' ').last, s[1]] }
       files = files.select { |f| f[0] == '41' } # it's the right size
+
       files.each do |tree_size, fname|
+
+        fname = fname.rstrip
+
         if size = File.size?(fname)
-          if size == tree_size.to_i
+
+          if size == 42
+
             # TODO: read in the data and verify that it's a sha + newline
             sha = File.read(fname).strip
             if sha.length == 40 && sha =~ /^[0-9a-f]+$/
